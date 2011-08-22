@@ -1,0 +1,65 @@
+REQUIREMENTS
+
+Ruby 1.8 
+  http://www.ruby-lang.org
+  * Shocto depends on yaml, readline, abbrev, timeout and getoptlong
+  which I believe are part of the standard installation. However, I
+  noticed that on Ubuntu (5.04), I had to install each of these packages
+  separately.
+
+
+Ruby Gems
+  http://docs.rubygems.org
+  The user manual has installation instructions.
+  I believe it's usually just a one command installation.
+
+OpenSSH
+  http://www.openssh.org
+
+INSTALLATION
+  sudo gem install Shocto-X.X.gem
+  (where X.X is the version number)
+
+
+RUNNING
+  type:
+  shocto
+
+  During startup, shocto will try to create ~/.shocto and a defaults file.
+
+
+Quick Start:
+	To see how it works, try these commands while you are in shocto:
+	
+	help
+	addgroup test
+	(this will change you to the "test" working group)
+	addserver apache@web1
+	addserver apache@web2
+	addserver apache@web3
+	addserver apache@web4
+	 
+	exec uptime
+	(this will try and run uptime on each server. If you don't have
+	ssh keys setup, then you will be prompted for a password)
+
+	copyid apache@web1
+	(this will send your public ssh key over to the server, to allow
+	you to connect without using a password. PLEASE SEE THE SSH DOCUMENTATION!)
+
+
+	Here is how you add a command. You will be prompted for several params.
+	addcommand
+		diskspace
+		Checks disk space in /opt
+		df -k | grep /opt
+
+	and then just type
+		diskspace
+	at the shocto prompt and the command will be run on all servers within
+	the current group.
+
+
+	Type save to save your group(s) and commands.
+
+	More to come...

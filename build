@@ -1,0 +1,5 @@
+#!/bin/sh
+gem build shocto.gemspec
+sudo gem install --no-rdoc `ls Shocto*.gem`
+cp ./bin/* ./test
+cp ./lib/* ./test

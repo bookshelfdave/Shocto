@@ -1,0 +1,118 @@
+#!/usr/bin/ruby
+###############################################################################
+#  Shocto 
+#  Copyright (C) 2005 David Parfitt (dparfitt@users.sourceforge.net)
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+###############################################################################
+
+require 'shoctolib'
+require 'commands'
+require 'commandparser'
+
+require 'yaml'
+require 'readline'
+require 'abbrev'
+require 'timeout'
+require 'getoptlong'
+
+SHOCTO_VERSION="0.5"
+##########################################################
+##########################################################
+# main
+##########################################################
+##########################################################
+
+def shoctohelp()
+	print <<END_OF_HELP
+Usage: shocto [options]
+Options:
+-l,--log filename		Log to file
+-c,--config filename		Use specified config file
+-s,--scriptmode			Forces display of commands and newlines when running in script mode 
+				Running a script without -s or --scriptmode will make it hang before exit (no EOF)
+					ex: cat script | shocto -s
+					or
+					shocto -s < script
+
+-h,--help			This help									
+END_OF_HELP
+exit
+end
+
+runoptions=Hash.new()
+puts "Shocto version #{SHOCTO_VERSION}, Copyright (C) David Parfitt"
+puts "Shocto comes with ABSOLUTELY NO WARRANTY"
+
+shoctoinit
+
+opts=GetoptLong.new(
+	["--log","-l",	GetoptLong::REQUIRED_ARGUMENT],
+	["--config","-c",	GetoptLong::REQUIRED_ARGUMENT],
+	["--scriptmode","-s", GetoptLong::NO_ARGUMENT],
+	["--help","-h", GetoptLong::NO_ARGUMENT]
+	);
+parser = CommandParser.new()
+
+# copy the options to a hash
+options=Hash.new()
+begin
+	opts.each {|opt, arg| options[opt]=arg}
+rescue StandardError => boom
+	# seems to print out just fine by itself
+end
+
+
+if options["--help"] or options["-h"]
+	shoctohelp
+end
+
+
+# check for a log file first, then open the output, then continue parsing options
+if options["--log"] or options["-l"]
+	if options["--log"]
+		logfile=options["--log"]
+	else
+		logfile=options["-l"]
+	end
+	Output.logfile(logfile)
+end
+
+# this will open a log file if it was specified
+Output.open
+
+
+# continue processing parameters
+if options["--config"] or options["-c"]
+	if options["--config"]
+		filename=options["--config"]
+	else
+		filename=options["-c"]
+	end
+	parser.do_load([filename])
+else
+	parser.do_load([])
+end
+
+if options["--scriptmode"] or options["-s"]
+	runoptions["scriptmode"] = true	
+else
+	runoptions["scriptmode"] = false
+end
+
+
+#parser.run(usereadline)
+parser.run(runoptions)
+Output.close
